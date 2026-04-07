@@ -57,6 +57,7 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
+            "http://localhost:3001",  // FIX: React dev server was on 3001, not 3000
             "https://taskmanager-bay-psi.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

@@ -22,8 +22,9 @@ public class Task {
 
     private boolean completed = false;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+@JoinColumn(name = "user_id", nullable = false)
+private User user;
 
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.MEDIUM;
