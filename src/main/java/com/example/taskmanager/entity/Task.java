@@ -1,41 +1,42 @@
 package com.example.taskmanager.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
 @Entity
+@Table(name = "tasks")
+@Data
+@NoArgsConstructor
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
-    private Long userId; 
+    private String description;
 
-    // getters
-    public Long getId() {
-        return id;
-    }
+    private boolean completed = false;
 
-    public String getTitle() {
-        return title;
-    }
+    @Column(nullable = false)
+    private Long userId;
 
-    public Long getUserId() {
-        return userId;
-    }
+    @Enumerated(EnumType.STRING)
+    private Priority priority = Priority.MEDIUM;
 
-    // setters
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Enumerated(EnumType.STRING)
+    private Category category = Category.OTHER;
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    private LocalDate dueDate;
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.TODO;
+
+    public enum Priority { HIGH, MEDIUM, LOW }
+    public enum Category { WORK, PERSONAL, HEALTH, SHOPPING, OTHER }
+    public enum Status { TODO, IN_PROGRESS, DONE }
 }
