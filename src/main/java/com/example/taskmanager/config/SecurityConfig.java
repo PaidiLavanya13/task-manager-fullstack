@@ -59,7 +59,8 @@ public class SecurityConfig {
     "http://localhost:3000",
     "http://localhost:3001",
     "https://taskmanager-bay-psi.vercel.app",
-    "https://task-manager-fullstack-nkml75572-paidilavanya00-8135s-projects.vercel.app"
+    "https://task-manager-fullstack-gray-six.vercel.app",
+    "https://task-manager-fullstack-r8ipaodj2-paidilavanya00-8135s-projects.vercel.app"
 ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
