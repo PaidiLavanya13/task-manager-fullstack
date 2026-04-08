@@ -20,6 +20,10 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    @GetMapping("/test")
+public ResponseEntity<?> test() {
+    return ResponseEntity.ok(Map.of("status", "backend is alive"));
+}
 
     @Autowired
     private PasswordEncoder passwordEncoder; // FIX: was missing — needed to hash passwords
