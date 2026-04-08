@@ -56,10 +56,11 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:3001",  // FIX: React dev server was on 3001, not 3000
-            "https://taskmanager-bay-psi.vercel.app"
-        ));
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://taskmanager-bay-psi.vercel.app",
+    "https://task-manager-fullstack-nkml75572-paidilavanya00-8135s-projects.vercel.app"
+));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         // FIX: Cannot use wildcard "*" with setAllowCredentials(true).
