@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-const API = process.env.REACT_APP_API_URL || "https://task-manager-fullstack-3wdq.onrender.com";
+const API = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
 const api = axios.create({ baseURL: API });
 api.interceptors.request.use(cfg => {
@@ -38,8 +38,7 @@ export default function App() {
     category: "WORK", status: "TODO", dueDate: ""
   });
 
-  const fetchTasks = useCallback(async (u) => {
-    if (!u) return;
+  const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get("/api/tasks");
@@ -55,10 +54,9 @@ export default function App() {
     const token = localStorage.getItem("token");
     const saved = localStorage.getItem("user");
     if (token && saved) {
-      const u = JSON.parse(saved);
-      setUser(u);
+      setUser(JSON.parse(saved));
       setScreen("app");
-      fetchTasks(u);
+      fetchTasks();
     }
   }, [fetchTasks]);
 
@@ -71,7 +69,7 @@ export default function App() {
     try {
       const res = await api.post(`/api/auth/${mode}`, authForm);
       if (mode === "register") {
-        setAuthError("Registered! Please login.");
+        setAuthError("Registered! Please sign in.");
         setScreen("login");
         return;
       }
@@ -80,7 +78,7 @@ export default function App() {
       localStorage.setItem("user", JSON.stringify(u));
       setUser(u);
       setScreen("app");
-      fetchTasks(u);
+      fetchTasks();
     } catch (e) {
       setAuthError(e.response?.data?.error || "Something went wrong.");
     }
@@ -203,9 +201,7 @@ export default function App() {
   return (
     <div style={s.page}>
       <header style={s.header}>
-        <div style={s.headerLeft}>
-          <span style={s.logo}>✦ TaskFlow</span>
-        </div>
+        <span style={s.logo}>✦ TaskFlow</span>
         <div style={s.headerRight}>
           <span style={s.username}>👤 {user?.username}</span>
           <button style={s.logoutBtn} onClick={logout}>Logout</button>
@@ -215,14 +211,14 @@ export default function App() {
       <div style={s.container}>
         <div style={s.statsRow}>
           {[
-            { label: "Total", value: stats.total, color: "#6366f1" },
-            { label: "Done", value: stats.done, color: "#22c55e" },
+            { label: "Total",       value: stats.total,      color: "#6366f1" },
+            { label: "Done",        value: stats.done,       color: "#22c55e" },
             { label: "In Progress", value: stats.inProgress, color: "#f59e0b" },
-            { label: "Overdue", value: stats.overdue, color: "#ef4444" },
-          ].map(s2 => (
-            <div key={s2.label} style={{ ...s.statCard, borderTop: `3px solid ${s2.color}` }}>
-              <div style={{ ...s.statNum, color: s2.color }}>{s2.value}</div>
-              <div style={s.statLabel}>{s2.label}</div>
+            { label: "Overdue",     value: stats.overdue,    color: "#ef4444" },
+          ].map(c => (
+            <div key={c.label} style={{ ...s.statCard, borderTop: `3px solid ${c.color}` }}>
+              <div style={{ ...s.statNum, color: c.color }}>{c.value}</div>
+              <div style={s.statLabel}>{c.label}</div>
             </div>
           ))}
         </div>
@@ -231,19 +227,16 @@ export default function App() {
           <input style={s.searchInput} placeholder="🔍  Search tasks..."
             value={filter.search}
             onChange={e => setFilter({ ...filter, search: e.target.value })} />
-
           <select style={s.select} value={filter.status}
             onChange={e => setFilter({ ...filter, status: e.target.value })}>
             <option value="">All Status</option>
             {Object.entries(STATUS_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
-
           <select style={s.select} value={filter.priority}
             onChange={e => setFilter({ ...filter, priority: e.target.value })}>
             <option value="">All Priority</option>
             {Object.entries(PRIORITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
-
           <button style={s.primaryBtn} onClick={openAdd}>+ New Task</button>
         </div>
 
@@ -258,12 +251,13 @@ export default function App() {
           <div style={s.taskList}>
             {filtered.map(task => {
               const pm = PRIORITY_META[task.priority] || PRIORITY_META.MEDIUM;
-              const sm = STATUS_META[task.status] || STATUS_META.TODO;
+              const sm = STATUS_META[task.status]    || STATUS_META.TODO;
               const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "DONE";
               return (
                 <div key={task.id} style={{ ...s.taskCard, opacity: task.status === "DONE" ? 0.65 : 1 }}>
                   <div style={s.taskLeft}>
-                    <button style={{ ...s.checkBtn, background: task.status === "DONE" ? "#22c55e" : "#e5e7eb" }}
+                    <button
+                      style={{ ...s.checkBtn, background: task.status === "DONE" ? "#22c55e" : "#e5e7eb" }}
                       onClick={() => toggleDone(task)}>
                       {task.status === "DONE" ? "✓" : ""}
                     </button>
@@ -285,7 +279,7 @@ export default function App() {
                     </div>
                   </div>
                   <div style={s.taskActions}>
-                    <button style={s.editBtn} onClick={() => openEdit(task)}>Edit</button>
+                    <button style={s.editBtn}   onClick={() => openEdit(task)}>Edit</button>
                     <button style={s.deleteBtn} onClick={() => deleteTask(task.id)}>Delete</button>
                   </div>
                 </div>
@@ -355,14 +349,8 @@ export default function App() {
 }
 
 const s = {
-  authPage: {
-    minHeight: "100vh", background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)",
-    display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif",
-  },
-  authCard: {
-    background: "white", borderRadius: "20px", padding: "40px",
-    width: "100%", maxWidth: "400px", boxShadow: "0 25px 50px rgba(0,0,0,0.3)",
-  },
+  authPage: { minHeight: "100vh", background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif" },
+  authCard: { background: "white", borderRadius: "20px", padding: "40px", width: "100%", maxWidth: "400px", boxShadow: "0 25px 50px rgba(0,0,0,0.3)" },
   authLogo: { textAlign: "center", fontSize: "36px", color: "#6366f1", marginBottom: "8px" },
   authTitle: { textAlign: "center", margin: "0 0 4px", fontSize: "28px", fontWeight: "700", color: "#1e1b4b" },
   authSub: { textAlign: "center", color: "#9ca3af", marginBottom: "24px", fontSize: "14px" },
@@ -374,7 +362,6 @@ const s = {
   primaryBtn: { width: "100%", padding: "12px", background: "#6366f1", color: "white", border: "none", borderRadius: "10px", fontSize: "15px", fontWeight: "600", cursor: "pointer" },
   page: { minHeight: "100vh", background: "#f8fafc", fontFamily: "'Segoe UI', sans-serif" },
   header: { background: "white", borderBottom: "1px solid #e5e7eb", padding: "0 24px", height: "60px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 },
-  headerLeft: { display: "flex", alignItems: "center" },
   logo: { fontWeight: "700", fontSize: "20px", color: "#6366f1" },
   headerRight: { display: "flex", alignItems: "center", gap: "16px" },
   username: { fontSize: "14px", color: "#6b7280" },

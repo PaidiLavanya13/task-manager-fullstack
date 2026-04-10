@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    // Get all tasks for a user
     List<Task> findByUserId(Long userId);
 
-    // FIX: Added search method used by TaskController's /search endpoint
     List<Task> findByUserIdAndTitleContainingIgnoreCase(Long userId, String keyword);
 }

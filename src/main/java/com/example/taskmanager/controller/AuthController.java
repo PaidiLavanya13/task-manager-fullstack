@@ -20,24 +20,43 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
-    @GetMapping("/test")
-public ResponseEntity<?> test() {
-    return ResponseEntity.ok(Map.of("status", "backend is alive"));
-}
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // FIX: was missing — needed to hash passwords
+    private PasswordEncoder passwordEncoder;
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok(Map.of("status", "backend is alive"));
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
-        // FIX: check if username already taken
-        if (userRepo.findByUsername(user.getUsername()).isPresent()) {
+    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String password = body.get("password");
+        String email    = body.get("email");
+
+        // Validate all fields present
+        if (username == null || password == null || email == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Username, password and email are required"));
+        }
+
+        // Check username taken
+        if (userRepo.findByUsername(username).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "Username already exists"));
         }
 
-        // FIX: hash the password before saving — never store plain text
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Check email taken
+        if (userRepo.findByEmail(email).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Email already registered"));
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
         userRepo.save(user);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -45,22 +64,22 @@ public ResponseEntity<?> test() {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
-        User existing = userRepo.findByUsername(user.getUsername())
-                .orElse(null);
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+        String password = body.get("password");
 
-        // FIX: use constant-time BCrypt check instead of .equals() on plain text
-        if (existing == null || !passwordEncoder.matches(user.getPassword(), existing.getPassword())) {
+        User existing = userRepo.findByUsername(username).orElse(null);
+
+        if (existing == null || !passwordEncoder.matches(password, existing.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid username or password"));
         }
 
         String token = jwtUtil.generateToken(existing.getUsername());
 
-        // FIX: return both token AND userId so frontend can filter tasks by user
         return ResponseEntity.ok(Map.of(
-                "token", token,
-                "userId", existing.getId(),
+                "token",    token,
+                "userId",   existing.getId(),
                 "username", existing.getUsername()
         ));
     }
