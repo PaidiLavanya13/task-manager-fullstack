@@ -24,7 +24,7 @@ const CATEGORIES = ["WORK", "PERSONAL", "HEALTH", "SHOPPING", "OTHER"];
 
 export default function App() {
   const [screen, setScreen]       = useState("login");
-  const [authForm, setAuthForm]   = useState({ username: "", password: "" });
+  const [authForm, setAuthForm] = useState({ username: "", password: "", email: "" });
   const [authError, setAuthError] = useState("");
   const [user, setUser]           = useState(null);
 
@@ -62,7 +62,7 @@ export default function App() {
 
   const handleAuth = async (mode) => {
     setAuthError("");
-    if (!authForm.username || !authForm.password) {
+    if (!authForm.username || !authForm.password || (mode === "register" && !authForm.email)) {
       setAuthError("Please fill in all fields.");
       return;
     }
@@ -171,7 +171,11 @@ export default function App() {
 
           <div style={s.tabs}>
             {["login", "register"].map(m => (
-              <button key={m} onClick={() => { setScreen(m); setAuthError(""); }}
+              <button key={m} onClick={() => {
+  setScreen(m);
+  setAuthError("");
+  setAuthForm({ username: "", password: "", email: "" });
+}}
                 style={{ ...s.tab, ...(screen === m ? s.tabActive : {}) }}>
                 {m === "login" ? "Sign In" : "Register"}
               </button>
@@ -187,6 +191,16 @@ export default function App() {
             value={authForm.password}
             onChange={e => setAuthForm({ ...authForm, password: e.target.value })}
             onKeyDown={e => e.key === "Enter" && handleAuth(screen)} />
+            {screen === "register" && (
+  <input
+    style={s.input}
+    placeholder="Email"
+    type="email"
+    value={authForm.email}
+    onChange={e => setAuthForm({ ...authForm, email: e.target.value })}
+    onKeyDown={e => e.key === "Enter" && handleAuth(screen)}
+  />
+)}
 
           {authError && <p style={s.authError}>{authError}</p>}
 
