@@ -19,14 +19,11 @@ public class TaskReminderScheduler {
     @Autowired
     private TaskRepository taskRepository;
 
-    // @Autowired
-    // private UserRepository userRepository;
-
     @Autowired
     private EmailService emailService;
 
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 40 17 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Kolkata")
     public void sendDueTomorrowReminders() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
