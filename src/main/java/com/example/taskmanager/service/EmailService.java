@@ -1,15 +1,17 @@
 package com.example.taskmanager.service;
 
-import com.resend.Resend;
-import com.resend.services.emails.model.CreateEmailOptions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
 
-    @Value("${resend.api.key}")
-    private String resendApiKey;
+    @Autowired
+    private JavaMailSender mailSender;
 
     @Value("${app.reminder.sender}")
     private String senderEmail;
@@ -17,14 +19,13 @@ public class EmailService {
     public void sendTaskReminder(String toEmail, String username,
                                   String taskTitle, String dueDate) {
         try {
-            Resend resend = new Resend(resendApiKey);
-            CreateEmailOptions request = CreateEmailOptions.builder()
-                .from(senderEmail)
-                .to(toEmail)
-                .subject("⏰ Task Reminder: " + taskTitle + " is due tomorrow!")
-                .html(buildReminderHtml(username, taskTitle, dueDate))
-                .build();
-            resend.emails().send(request);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("⏰ Task Reminder: " + taskTitle + " is due tomorrow!");
+            helper.setText(buildReminderHtml(username, taskTitle, dueDate), true);
+            mailSender.send(message);
         } catch (Exception e) {
             System.err.println("Failed to send reminder email to " + toEmail + ": " + e.getMessage());
         }
@@ -32,14 +33,13 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
         try {
-            Resend resend = new Resend(resendApiKey);
-            CreateEmailOptions request = CreateEmailOptions.builder()
-                .from(senderEmail)
-                .to(toEmail)
-                .subject("🔐 TaskFlow — Reset Your Password")
-                .html(buildResetHtml(username, resetLink))
-                .build();
-            resend.emails().send(request);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("🔐 TaskFlow — Reset Your Password");
+            helper.setText(buildResetHtml(username, resetLink), true);
+            mailSender.send(message);
         } catch (Exception e) {
             System.err.println("Failed to send reset email to " + toEmail + ": " + e.getMessage());
         }
