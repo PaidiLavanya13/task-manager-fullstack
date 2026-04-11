@@ -1,9 +1,10 @@
 package com.example.taskmanager.service;
 
-import com.resend.*;
-import com.resend.services.emails.model.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 
 @Service
 public class EmailService {
@@ -18,7 +19,7 @@ public class EmailService {
                                   String taskTitle, String dueDate) {
         try {
             Resend resend = new Resend(resendApiKey);
-            SendEmailRequest request = SendEmailRequest.builder()
+            SendEmailRequest request = CreateEmailOptions.builder()
                 .from(senderEmail)
                 .to(toEmail)
                 .subject("⏰ Task Reminder: " + taskTitle + " is due tomorrow!")
@@ -33,7 +34,7 @@ public class EmailService {
     public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
         try {
             Resend resend = new Resend(resendApiKey);
-            SendEmailRequest request = SendEmailRequest.builder()
+            SendEmailRequest request = CreateEmailOptions.builder()
                 .from(senderEmail)
                 .to(toEmail)
                 .subject("🔐 TaskFlow — Reset Your Password")
