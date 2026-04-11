@@ -1,58 +1,50 @@
 package com.example.taskmanager.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.resend.*;
+import com.resend.services.emails.model.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
     @Value("${app.reminder.sender}")
     private String senderEmail;
 
-    // ── Task reminder email ────────────────────────────────────────────────
     public void sendTaskReminder(String toEmail, String username,
                                   String taskTitle, String dueDate) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setFrom(senderEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("⏰ Task Reminder: " + taskTitle + " is due tomorrow!");
-            helper.setText(buildReminderHtml(username, taskTitle, dueDate), true);
-
-            mailSender.send(message);
+            Resend resend = new Resend(resendApiKey);
+            SendEmailRequest request = SendEmailRequest.builder()
+                .from(senderEmail)
+                .to(toEmail)
+                .subject("⏰ Task Reminder: " + taskTitle + " is due tomorrow!")
+                .html(buildReminderHtml(username, taskTitle, dueDate))
+                .build();
+            resend.emails().send(request);
         } catch (Exception e) {
             System.err.println("Failed to send reminder email to " + toEmail + ": " + e.getMessage());
         }
     }
 
-    // ── Password reset email ───────────────────────────────────────────────
     public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setFrom(senderEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("🔐 TaskFlow — Reset Your Password");
-            helper.setText(buildResetHtml(username, resetLink), true);
-
-            mailSender.send(message);
+            Resend resend = new Resend(resendApiKey);
+            SendEmailRequest request = SendEmailRequest.builder()
+                .from(senderEmail)
+                .to(toEmail)
+                .subject("🔐 TaskFlow — Reset Your Password")
+                .html(buildResetHtml(username, resetLink))
+                .build();
+            resend.emails().send(request);
         } catch (Exception e) {
             System.err.println("Failed to send reset email to " + toEmail + ": " + e.getMessage());
         }
     }
 
-    // ── HTML templates ─────────────────────────────────────────────────────
     private String buildReminderHtml(String username, String taskTitle, String dueDate) {
         return """
             <div style="font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: auto;
@@ -82,8 +74,7 @@ public class EmailService {
               <div style="text-align: center; margin: 24px 0;">
                 <a href="%s"
                    style="background: #6366f1; color: white; padding: 12px 28px;
-                          border-radius: 8px; text-decoration: none; font-weight: 600;
-                          font-size: 15px;">
+                          border-radius: 8px; text-decoration: none; font-weight: 600;">
                   Reset Password
                 </a>
               </div>
