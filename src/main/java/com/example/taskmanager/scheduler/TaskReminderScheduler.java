@@ -23,7 +23,7 @@ public class TaskReminderScheduler {
     private EmailService emailService;
 
     // Runs every day at 9:00 AM
-    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Kolkata")
+    @Scheduled(cron = "0 30 16 * * *", zone = "Asia/Kolkata")
     public void sendDueTomorrowReminders() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
