@@ -88,35 +88,35 @@ public class AuthController {
     // ── Forgot Password ────────────────────────────────────────────────────
 
     @PostMapping("/forgot-password")
-@Transactional
-public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
-    String email = body.get("email");
-    if (email == null || email.isBlank()) {
-        return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+    @Transactional
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+
+        // Always return success to avoid email enumeration
+        userRepo.findByEmail(email).ifPresent(user -> {
+            // Delete any existing tokens for this user
+            tokenRepo.deleteByUserId(user.getId());
+
+            // Create new token valid for 1 hour
+            String tokenValue = UUID.randomUUID().toString();
+            PasswordResetToken resetToken = new PasswordResetToken();
+            resetToken.setToken(tokenValue);
+            resetToken.setUser(user);
+            resetToken.setExpiresAt(LocalDateTime.now().plusHours(1));
+            tokenRepo.save(resetToken);
+
+            // Send email with reset link
+            String resetLink = frontendUrl + "/reset-password?token=" + tokenValue;
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetLink);
+        });
+
+        return ResponseEntity.ok(Map.of(
+                "message", "If that email is registered, a reset link has been sent."
+        ));
     }
-
-    // Check if email exists — return different messages
-    var userOpt = userRepo.findByEmail(email);
-    if (userOpt.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "No account found with this email address."));
-    }
-
-    var user = userOpt.get();
-    tokenRepo.deleteByUserId(user.getId());
-
-    String tokenValue = UUID.randomUUID().toString();
-    PasswordResetToken resetToken = new PasswordResetToken();
-    resetToken.setToken(tokenValue);
-    resetToken.setUser(user);
-    resetToken.setExpiresAt(LocalDateTime.now().plusHours(1));
-    tokenRepo.save(resetToken);
-
-    String resetLink = frontendUrl + "/reset-password?token=" + tokenValue;
-    emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetLink);
-
-    return ResponseEntity.ok(Map.of("message", "Reset link sent! Please check your email."));
-}
 
     @PostMapping("/reset-password")
     @Transactional

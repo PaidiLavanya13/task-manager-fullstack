@@ -129,9 +129,8 @@ export default function App() {
     try {
       const res = await api.post("/api/auth/forgot-password", { email: forgotEmail });
       setForgotMsg(res.data.message);
-    } catch (e) {
-      
-      setForgotMsg(e.response?.data?.error || "Something went wrong. Please try again.");
+    } catch {
+      setForgotMsg("Something went wrong. Please try again.");
     } finally {
       setForgotLoading(false);
     }
