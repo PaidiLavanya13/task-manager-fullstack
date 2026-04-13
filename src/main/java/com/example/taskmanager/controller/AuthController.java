@@ -29,7 +29,7 @@ public class AuthController {
     @Autowired private PasswordResetTokenRepository tokenRepo;
 
     // Frontend URL for the reset link
-    @Value("${APP_FRONTEND_URL}")
+    @Value("${app.frontend.url}")
     private String frontendUrl;
 
     @GetMapping("/test")
