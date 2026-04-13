@@ -31,19 +31,22 @@ public class EmailService {
         }
     }
 
-    public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setFrom(senderEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("🔐 TaskFlow — Reset Your Password");
-            helper.setText(buildResetHtml(username, resetLink), true);
-            mailSender.send(message);
-        } catch (Exception e) {
-            System.err.println("Failed to send reset email to " + toEmail + ": " + e.getMessage());
-        }
+   public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
+    try {
+        System.out.println("==> Attempting reset email to: " + toEmail);
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom(senderEmail);
+        helper.setTo(toEmail);
+        helper.setSubject("🔐 TaskFlow — Reset Your Password");
+        helper.setText(buildResetHtml(username, resetLink), true);
+        mailSender.send(message);
+        System.out.println("==> Reset email sent successfully to: " + toEmail);
+    } catch (Exception e) {
+        System.err.println("==> MAIL ERROR: " + e.getMessage());
+        e.printStackTrace();
     }
+}
 
     private String buildReminderHtml(String username, String taskTitle, String dueDate) {
         return """
